@@ -5,5 +5,7 @@ dist/
 *.log
 client/node_modules/
 client/dist/
+client/.env
 server/node_modules/
 server/.env
+.env

@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
+// App.jsx
+import React, { useState } from "react";
+import Pusher from "pusher-js";
 import JoinChat from "./components/JoinChat";
 import Chat from "./components/Chat";
 import { AnimatePresence, motion } from "framer-motion";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-const socket = io.connect(BACKEND_URL);
+// Pusher Initialization
+const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_KEY || "your_pusher_key", {
+  cluster: import.meta.env.VITE_PUSHER_CLUSTER || "ap2",
+});
 
 function App() {
   const [username, setUsername] = useState("");
@@ -14,7 +17,6 @@ function App() {
 
   const joinRoom = () => {
     if (username !== "" && room !== "") {
-      socket.emit("join_room", room);
       setShowChat(true);
     }
   };
@@ -47,7 +49,7 @@ function App() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-4xl h-[85vh]"
           >
-            <Chat socket={socket} username={username} room={room} />
+            <Chat pusher={pusherClient} username={username} room={room} />
           </motion.div>
         )}
       </AnimatePresence>

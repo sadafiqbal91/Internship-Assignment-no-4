@@ -1,9 +1,12 @@
+// components/Chat.jsx
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Send, LogOut, MessageSquare } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-function Chat({ socket, username, room }) {
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
+function Chat({ pusher, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
   const scrollRef = useRef();
@@ -12,7 +15,6 @@ function Chat({ socket, username, room }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
         const response = await axios.get(`${BACKEND_URL}/messages/${room}`);
         setMessageList(response.data);
       } catch (err) {
@@ -21,6 +23,22 @@ function Chat({ socket, username, room }) {
     };
     fetchHistory();
   }, [room]);
+
+  // Real-time Message listener (Pusher)
+  useEffect(() => {
+    const channel = pusher.subscribe(room);
+    channel.bind("receive_message", (data) => {
+      // Local list update only if the message is from someone else
+      // because we already add our own message to the list in sendMessage
+      if (data.author !== username) {
+        setMessageList((list) => [...list, data]);
+      }
+    });
+
+    return () => {
+      pusher.unsubscribe(room);
+    };
+  }, [pusher, room, username]);
 
   const sendMessage = async () => {
     if (currentMessage !== "") {
@@ -31,18 +49,16 @@ function Chat({ socket, username, room }) {
         time: new Date(Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
-      await socket.emit("send_message", messageData);
-      setMessageList((list) => [...list, messageData]);
-      setCurrentMessage("");
+      try {
+        // Send to backend via HTTP POST
+        await axios.post(`${BACKEND_URL}/send-message`, messageData);
+        setMessageList((list) => [...list, messageData]);
+        setCurrentMessage("");
+      } catch (err) {
+        console.error("Failed to send message:", err);
+      }
     }
   };
-
-  useEffect(() => {
-    socket.on("receive_message", (data) => {
-      setMessageList((list) => [...list, data]);
-    });
-    return () => socket.off("receive_message");
-  }, [socket]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -50,7 +66,6 @@ function Chat({ socket, username, room }) {
 
   return (
     <div className="glass-card flex flex-col h-full overflow-hidden border-border/50">
-      {/* Header */}
       <div className="p-4 border-b border-border/50 flex justify-between items-center bg-white/5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -64,15 +79,11 @@ function Chat({ socket, username, room }) {
             </p>
           </div>
         </div>
-        <button 
-          onClick={() => window.location.reload()}
-          className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors"
-        >
+        <button onClick={() => window.location.reload()} className="p-2 hover:bg-red-500/10 rounded-lg text-red-400">
           <LogOut className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messageList.map((msg, idx) => (
           <motion.div
@@ -95,7 +106,6 @@ function Chat({ socket, username, room }) {
         <div ref={scrollRef} />
       </div>
 
-      {/* Input */}
       <div className="p-4 bg-white/5 border-t border-border/50">
         <div className="flex gap-2">
           <input
@@ -106,10 +116,7 @@ function Chat({ socket, username, room }) {
             onChange={(e) => setCurrentMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button 
-            onClick={sendMessage}
-            className="btn-primary w-12 h-12 flex items-center justify-center p-0 rounded-xl"
-          >
+          <button onClick={sendMessage} className="btn-primary w-12 h-12 flex items-center justify-center p-0 rounded-xl">
             <Send className="w-5 h-5" />
           </button>
         </div>
