@@ -50,7 +50,7 @@ function JoinChat({ username, setUsername, room, setRoom, joinRoom }) {
       </div>
 
       <p className="text-[10px] text-text-muted mt-2">
-        MERN Stack • Socket.io • Real-time
+        MERN Stack • Pusher • Real-time
       </p>
     </div>
   );
