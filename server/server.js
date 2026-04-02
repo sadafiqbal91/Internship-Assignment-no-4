@@ -16,21 +16,21 @@ let dbError = null;
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error("FATAL ERROR: MONGODB_URI is not defined in environment variables!");
-  dbError = "MONGODB_URI is missing in Vercel Environment Variables.";
-}
-
-mongoose.connect(MONGODB_URI, {
-  connectTimeoutMS: 10000, // Fail after 10 seconds instead of hanging
-})
+  dbError = "FATAL: MONGODB_URI is missing in Vercel Environment Variables.";
+  console.error(dbError);
+} else {
+  mongoose.connect(MONGODB_URI, {
+    connectTimeoutMS: 10000,
+  })
   .then(() => {
     console.log("MongoDB Connected Successfully");
     dbError = null;
   })
   .catch(err => {
-    console.error("CRITICAL: MongoDB connection error details:", err.message);
+    console.error("MongoDB Connection Error:", err.message);
     dbError = err.message;
   });
+}
 
 // Health Check Route
 app.get("/", (req, res) => {
