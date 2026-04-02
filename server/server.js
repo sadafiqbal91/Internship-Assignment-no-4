@@ -10,6 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health Check Route
+app.get("/", (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? "Connected" : "Disconnected (Code: " + mongoose.connection.readyState + ")";
+  res.send(`<h1>Backend is running!</h1><p>MongoDB Status: <b>${dbStatus}</b></p><p>Pusher Status: <b>Configured</b></p>`);
+});
+
 // Pusher Setup (Yeh details aapko Pusher Dashboard se milengi)
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
