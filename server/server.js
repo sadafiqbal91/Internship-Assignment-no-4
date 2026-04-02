@@ -26,10 +26,18 @@ const pusher = new Pusher({
 });
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/chatApp";
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error("FATAL ERROR: MONGODB_URI is not defined in environment variables!");
+}
+
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log("MongoDB connection error:", err));
+  .then(() => console.log("MongoDB Connected Successfully"))
+  .catch(err => {
+    console.error("CRITICAL: MongoDB connection error details:", err.message);
+    console.error("Suggestion: Check your MongoDB Atlas Network Access (IP Whitelist). Must be 0.0.0.0/0 for Vercel.");
+  });
 
 // API to Send Message (Replaces socket.on("send_message"))
 app.post("/send-message", async (req, res) => {
@@ -54,10 +62,14 @@ app.post("/send-message", async (req, res) => {
 // API for Chat history (Existing)
 app.get("/messages/:room", async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: "Database not connected yet" });
+    }
     const messages = await Message.find({ room: req.params.room }).sort({ timestamp: 1 });
     res.json(messages);
   } catch (err) {
-    res.status(500).json({ error: "Error fetching messages" });
+    console.error("Fetch Messages Error:", err.message);
+    res.status(500).json({ error: "Error fetching messages: " + err.message });
   }
 });
 
