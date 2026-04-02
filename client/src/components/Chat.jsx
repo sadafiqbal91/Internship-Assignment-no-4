@@ -26,16 +26,18 @@ function Chat({ pusher, username, room }) {
 
   // Real-time Message listener (Pusher)
   useEffect(() => {
+    console.log("Subscribing to Pusher channel:", room);
     const channel = pusher.subscribe(room);
+    
     channel.bind("receive_message", (data) => {
-      // Local list update only if the message is from someone else
-      // because we already add our own message to the list in sendMessage
+      console.log("Pusher Event Received:", data);
       if (data.author !== username) {
         setMessageList((list) => [...list, data]);
       }
     });
 
     return () => {
+      console.log("Unsubscribing from channel:", room);
       pusher.unsubscribe(room);
     };
   }, [pusher, room, username]);

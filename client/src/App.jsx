@@ -6,6 +6,7 @@ import Chat from "./components/Chat";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Pusher Initialization
+Pusher.logToConsole = true;
 const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_KEY || "your_pusher_key", {
   cluster: import.meta.env.VITE_PUSHER_CLUSTER || "ap2",
 });
