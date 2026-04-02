@@ -4,7 +4,7 @@ import axios from "axios";
 import { Send, LogOut, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://internship-assignment-no-4.vercel.app";
 
 function Chat({ pusher, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");

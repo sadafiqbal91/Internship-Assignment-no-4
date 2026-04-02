@@ -12,8 +12,19 @@ app.use(express.json());
 
 // Health Check Route
 app.get("/", (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "Connected" : "Disconnected (Code: " + mongoose.connection.readyState + ")";
-  res.send(`<h1>Backend is running!</h1><p>MongoDB Status: <b>${dbStatus}</b></p><p>Pusher Status: <b>Configured</b></p>`);
+  const states = ["Disconnected", "Connected", "Connecting", "Disconnecting"];
+  const dbStatus = states[mongoose.connection.readyState] || "Unknown";
+  
+  res.send(`
+    <div style="font-family: sans-serif; padding: 20px; background: #0f172a; color: white;">
+      <h1 style="color: #38bdf8;">Backend Status Page</h1>
+      <p>Server Status: <b style="color: #4ade80;">Online ✅</b></p>
+      <p>MongoDB Status: <b style="color: ${mongoose.connection.readyState === 1 ? '#4ade80' : '#f87171'}">${dbStatus} (Code: ${mongoose.connection.readyState})</b></p>
+      <p>Pusher Status: <b style="color: #4ade80;">Configured ✅</b></p>
+      <hr style="border: 0.5px solid #334155; margin: 20px 0;" />
+      <p><small style="color: #94a3b8;">If MongoDB is stuck on 'Connecting', check your Password and Network Access (Allow 0.0.0.0/0).</small></p>
+    </div>
+  `);
 });
 
 // Pusher Setup (Yeh details aapko Pusher Dashboard se milengi)
