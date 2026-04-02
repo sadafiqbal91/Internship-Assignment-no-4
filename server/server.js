@@ -56,7 +56,7 @@ app.get("/", (req, res) => {
   `);
 });
 
-// Pusher Setup (Yeh details aapko Pusher Dashboard se milengi)
+// Pusher Setup
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
   key: process.env.PUSHER_KEY,
@@ -65,41 +65,21 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  console.error("FATAL ERROR: MONGODB_URI is not defined in environment variables!");
-}
-
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log("MongoDB Connected Successfully"))
-  .catch(err => {
-    console.error("CRITICAL: MongoDB connection error details:", err.message);
-    console.error("Suggestion: Check your MongoDB Atlas Network Access (IP Whitelist). Must be 0.0.0.0/0 for Vercel.");
-  });
-
-// API to Send Message (Replaces socket.on("send_message"))
+// API to Send Message
 app.post("/send-message", async (req, res) => {
   try {
-    const data = req.body; // { room, author, message, time }
-    
-    // 1. Save to MongoDB
+    const data = req.body; 
     const newMessage = new Message(data);
     await newMessage.save();
-
-    // 2. Trigger Pusher Event (Real-time update)
-    // "room" will be the channel name, "receive_message" will be the event
     pusher.trigger(data.room, "receive_message", data);
-
     res.status(200).send("Message Sent");
   } catch (err) {
     console.error("Error:", err);
-    res.status(500).send(err);
+    res.status(500).send(err.message);
   }
 });
 
-// API for Chat history (Existing)
+// API for Chat history
 app.get("/messages/:room", async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
@@ -113,8 +93,12 @@ app.get("/messages/:room", async (req, res) => {
   }
 });
 
-// For Vercel, we don't need a separate http server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`SERVER RUNNING ON PORT ${PORT}`);
-});
+const BACKEND_URL = "https://internship-assignment-no-4.vercel.app";
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`SERVER RUNNING ON PORT ${PORT}`);
+  });
+}
+
+module.exports = app;
