@@ -5,8 +5,7 @@ import JoinChat from "./components/JoinChat";
 import Chat from "./components/Chat";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Pusher Initialization
-Pusher.logToConsole = true;
+// Pusher Initialization - Done once outside the component
 const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_KEY || "your_pusher_key", {
   cluster: import.meta.env.VITE_PUSHER_CLUSTER || "ap2",
 });

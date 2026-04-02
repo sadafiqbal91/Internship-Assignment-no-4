@@ -26,18 +26,18 @@ function Chat({ pusher, username, room }) {
 
   // Real-time Message listener (Pusher)
   useEffect(() => {
-    console.log("Subscribing to Pusher channel:", room);
+    // Subscribe to the room channel
     const channel = pusher.subscribe(room);
     
+    // Bind the "receive_message" event
     channel.bind("receive_message", (data) => {
-      console.log("Pusher Event Received:", data);
+      // Add message only if it's from someone else
       if (data.author !== username) {
         setMessageList((list) => [...list, data]);
       }
     });
 
     return () => {
-      console.log("Unsubscribing from channel:", room);
       pusher.unsubscribe(room);
     };
   }, [pusher, room, username]);
@@ -54,6 +54,8 @@ function Chat({ pusher, username, room }) {
       try {
         // Send to backend via HTTP POST
         await axios.post(`${BACKEND_URL}/send-message`, messageData);
+        
+        // Optimistically add to local list
         setMessageList((list) => [...list, messageData]);
         setCurrentMessage("");
       } catch (err) {
@@ -81,7 +83,7 @@ function Chat({ pusher, username, room }) {
             </p>
           </div>
         </div>
-        <button onClick={() => window.location.reload()} className="p-2 hover:bg-red-500/10 rounded-lg text-red-400">
+        <button onClick={() => window.location.reload()} className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors">
           <LogOut className="w-5 h-5" />
         </button>
       </div>
