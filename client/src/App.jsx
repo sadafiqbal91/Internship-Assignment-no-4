@@ -1,13 +1,18 @@
 // App.jsx
 import React, { useState } from "react";
 import Pusher from "pusher-js";
+import axios from "axios";
 import JoinChat from "./components/JoinChat";
 import Chat from "./components/Chat";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Pusher Initialization - Done once outside the component
-const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_KEY || "your_pusher_key", {
-  cluster: import.meta.env.VITE_PUSHER_CLUSTER || "ap2",
+const PUSHER_KEY = "037303f8a4f65050f22d";
+const PUSHER_CLUSTER = "ap2";
+const BACKEND_URL = "https://internship-assignment-no-4.vercel.app";
+
+const pusherClient = new Pusher(PUSHER_KEY, {
+  cluster: PUSHER_CLUSTER,
 });
 
 function App() {
@@ -15,9 +20,15 @@ function App() {
   const [room, setRoom] = useState("");
   const [showChat, setShowChat] = useState(false);
 
-  const joinRoom = () => {
+  const joinRoom = async () => {
     if (username !== "" && room !== "") {
-      setShowChat(true);
+      try {
+        const response = await axios.get(`${BACKEND_URL}/messages/${room}`);
+        setShowChat(true);
+      } catch (err) {
+        console.error("Error joining room:", err);
+        alert("Database error: Mohabbat! Backend is not connected to MongoDB. Check status page.");
+      }
     }
   };
 
