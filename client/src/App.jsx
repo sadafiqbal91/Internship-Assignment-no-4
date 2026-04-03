@@ -7,7 +7,7 @@ import Chat from "./components/Chat";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Pusher Initialization - Done once outside the component
-const PUSHER_KEY = "037303f8a4f65050f22d";
+const PUSHER_KEY = "cceca38da89af62b447c";
 const PUSHER_CLUSTER = "ap2";
 const BACKEND_URL = "https://internship-assignment-no-4.vercel.app";
 
@@ -20,15 +20,9 @@ function App() {
   const [room, setRoom] = useState("");
   const [showChat, setShowChat] = useState(false);
 
-  const joinRoom = async () => {
+  const joinRoom = () => {
     if (username !== "" && room !== "") {
-      try {
-        const response = await axios.get(`${BACKEND_URL}/messages/${room}`);
-        setShowChat(true);
-      } catch (err) {
-        console.error("Error joining room:", err);
-        alert("Database error: Mohabbat! Backend is not connected to MongoDB. Check status page.");
-      }
+      setShowChat(true);
     }
   };
 
